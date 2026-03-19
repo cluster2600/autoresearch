@@ -1,0 +1,43 @@
+services:
+  autoresearch:
+    image: nvcr.io/nvidia/pytorch:24.12-py3
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    shm_size: 16gb
+    volumes:
+      - type: bind
+        source: .
+        target: /project
+    working_dir: /project
+    command: >
+      bash -c "
+        pip install -q uv &&
+        uv sync &&
+        echo '=== Data prep ===' &&
+        uv run prepare.py &&
+        echo '=== Ready for training ===' &&
+        echo 'Run: uv run train.py' &&
+        sleep infinity
+      "
+    ports:
+      - "8888:8888"
+
+  tensorboard:
+    image: nvcr.io/nvidia/pytorch:24.12-py3
+    profiles: [monitoring]
+    environment:
+      - NVWB_TRIM_PREFIX=true
+    volumes:
+      - type: bind
+        source: .
+        target: /project
+    working_dir: /project
+    ports:
+      - "6006:6006"
+    command: ["tensorboard", "--logdir=.", "--host=0.0.0.0", "--port=6006"]
