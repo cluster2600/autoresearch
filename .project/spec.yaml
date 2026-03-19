@@ -1,0 +1,46 @@
+specVersion: v2
+specMinorVersion: 2
+meta:
+  name: autoresearch
+  image: project-autoresearch
+  description: "AI agents running autonomous LLM research on single-GPU nanochat training"
+  createdOn: "2026-03-19T00:00:00Z"
+  defaultBranch: main
+layout:
+- path: .project/
+  type: git
+  storage: git
+- path: code/
+  type: git
+  storage: git
+- path: models/
+  type: git
+  storage: gitlfs
+- path: data/
+  type: git
+  storage: gitignore
+- path: data/scratch/
+  type: git
+  storage: gitignore
+environment:
+  base:
+    registry: nvcr.io
+    image: nvidia/pytorch:24.12-py3
+    name: PyTorch
+    description: "NVIDIA PyTorch container with CUDA support"
+    os_distro: ubuntu
+    os_distro_release: "22.04"
+execution:
+  apps: []
+  resources:
+    gpu:
+      requested: 1
+    sharedMemoryMB: 4096
+  secrets:
+    - variable: NVIDIA_API_KEY
+      description: "NVIDIA API key for inference"
+  mounts:
+    - type: project
+      target: /project/
+      description: Project root
+      options: ""
